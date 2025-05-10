@@ -1,0 +1,12 @@
+streamlit
+pandas
+openpyxl
+xlrd
+python-dotenv
+langchain-anthropic
+langgraph
+langgraph-cli[inmem]
+matplotlib
+numpy
+seaborn
+tensorflow

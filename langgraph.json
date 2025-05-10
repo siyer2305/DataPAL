@@ -1,0 +1,8 @@
+{
+    "dependencies": ["./DataPal"],
+    "graphs": {
+      "agent": "./DataPal/agent/agent_graph.py:graph"
+    },
+    "env": ".env",
+    "python_version": "3.13"
+}
