@@ -63,3 +63,7 @@ parts/
 sdist/
 var/
 wheels/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
