@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Chat - {{ thread_id }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}"> <!-- Link to your existing stylesheet -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/sse.js"></script>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+            background-color: #f4f7f6; 
+            color: #333;
+        }
+        .chat-header {
+            padding: 15px; 
+            background-color: #02AB55; /* LangChain Green */
+            color: white; 
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .chat-header h1 {
+            margin: 0;
+            font-size: 1.5em;
+        }
+        .chat-header a {
+            color: white;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+        .chat-header a:hover {
+            text-decoration: underline;
+        }
+        #chat-container { 
+            flex-grow: 1; 
+            overflow-y: auto; 
+            padding: 20px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 12px; 
+            background-color: #ffffff;
+        }
+        .message { 
+            padding: 10px 15px; 
+            border-radius: 18px; 
+            max-width: 75%; 
+            word-wrap: break-word; 
+            line-height: 1.4;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .user-message { 
+            background-color: #F6EDFE; /* Light Purple */ 
+            color: #333;
+            align-self: flex-end; 
+            border-bottom-right-radius: 6px; 
+        }
+        .assistant-message { 
+            background-color: #EBFDF1; /* Light Green */
+            color: #333;
+            align-self: flex-start; 
+            border-bottom-left-radius: 6px; 
+        }
+        .assistant-message.typing {
+            display: flex;
+            align-items: center;
+        }
+        .assistant-message.typing span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            margin: 0 2px;
+            background-color: #02AB55;
+            border-radius: 50%;
+            opacity: 0.4;
+            animation: typing-dots 1.2s infinite ease-in-out;
+        }
+        .assistant-message.typing span:nth-child(1) { animation-delay: -0.2s; }
+        .assistant-message.typing span:nth-child(2) { animation-delay: -0.1s; }
+        .assistant-message.typing span:nth-child(3) { animation-delay: 0s; }
+
+        @keyframes typing-dots {
+            0%, 60%, 100% { transform: scale(0.8); opacity: 0.4; }
+            30% { transform: scale(1); opacity: 1; }
+        }
+        #input-area { 
+            display: flex; 
+            padding: 15px; 
+            border-top: 1px solid #e0e0e0; 
+            background-color: #f9f9f9; 
+        }
+        #message-input { 
+            flex-grow: 1; 
+            padding: 12px 15px; 
+            border: 1px solid #ccc; 
+            border-radius: 22px; 
+            margin-right: 10px; 
+            font-size: 1em;
+        }
+        #message-input:focus {
+            outline: none;
+            border-color: #02AB55;
+            box-shadow: 0 0 0 2px rgba(2, 171, 85, 0.2);
+        }
+        #input-area button { 
+            padding: 12px 20px; 
+            border: none; 
+            background-color: #02AB55; 
+            color: white; 
+            border-radius: 22px; 
+            cursor: pointer; 
+            font-size: 1em;
+            transition: background-color 0.2s;
+        }
+        #input-area button:hover { 
+            background-color: #028a44; 
+        }
+        .error-message { 
+            color: #D8000C; 
+            background-color: #FFD2D2;
+            border: 1px solid #D8000C;
+            font-style: italic; 
+            font-size: 0.9em; 
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-header">
+        <h1>Chat with your Database</h1>
+        <p><a href="{{ url_for('main_page') }}">Back to Main Page</a> | <a href="{{ url_for('new_chat_session') }}">Start New Chat</a></p>
+    </div>
+
+    <div id="chat-container">
+        {% for msg in chat_history %}
+            <div class="message {{ 'user-message' if msg.role == 'user' else 'assistant-message' }}">
+                {{ msg.content | nl2br }}
+            </div>
+        {% endfor %}
+    </div>
+
+    <form id="chat-form" data-thread-id="{{ thread_id }}">
+        <div id="input-area">
+            <input type="text" id="message-input" placeholder="Ask something about your data..." autocomplete="off">
+            <button type="submit">Send</button>
+        </div>
+    </form>
+
+    <script>
+        const chatContainer = document.getElementById('chat-container');
+        const chatForm = document.getElementById('chat-form');
+        const messageInput = document.getElementById('message-input');
+        const threadId = chatForm.dataset.threadId;
+        let eventSource = null;
+        let assistantMessageDiv = null; // To hold the current assistant message being streamed
+        let messageContentLoaded = false; // Flag to track if content was actually appended
+
+        function escapeHTML(str) {
+            const p = document.createElement('p');
+            p.appendChild(document.createTextNode(str));
+            return p.innerHTML;
+        }
+
+        function addMessageToChat(role, text, isTyping = false) {
+            const messageWrapper = document.createElement('div');
+            messageWrapper.classList.add('message');
+            if (role === 'user') {
+                messageWrapper.classList.add('user-message');
+                messageWrapper.innerHTML = escapeHTML(text).replace(/\n/g, '<br>');
+            } else {
+                messageWrapper.classList.add('assistant-message');
+                if (isTyping) {
+                    messageWrapper.classList.add('typing');
+                    messageWrapper.id = 'assistant-typing-indicator';
+                    messageWrapper.innerHTML = '<span></span><span></span><span></span>'; // Dots for typing
+                } else {
+                    // text here is already HTML if it contained newlines
+                    messageWrapper.innerHTML = text; // Text will be appended piece by piece for streaming
+                }
+            }
+            chatContainer.appendChild(messageWrapper);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            return messageWrapper; // Return the created div
+        }
+
+        chatForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const messageText = messageInput.value.trim();
+            if (!messageText) return;
+
+            addMessageToChat('user', messageText);
+            messageInput.value = '';
+            
+            const typingIndicator = addMessageToChat('assistant', '', true);
+
+            try {
+                const response = await fetch(`/chat/${threadId}/send-message`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Accept': 'application/json'
+                    },
+                    body: new URLSearchParams({ msg: messageText })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: 'Failed to send message and parse error response from server.' }));
+                    throw new Error(errorData.error || 'Server indicated an error, but could not parse details.');
+                }
+
+                const data = await response.json();
+                const runId = data.run_id;
+
+                if (typingIndicator) typingIndicator.remove(); // Remove typing indicator once stream starts or if error before stream
+
+                if (eventSource) {
+                    eventSource.close();
+                }
+                
+                assistantMessageDiv = addMessageToChat('assistant', ''); // Create new div for assistant's response
+                messageContentLoaded = false; // Reset flag for new response
+
+                eventSource = new EventSource(`/chat/${threadId}/get-message?run_id=${runId}`);
+
+                eventSource.addEventListener('message', function(e) {
+                    const messageContent = e.data; 
+                    console.log("SSE Client: Received message event. Raw Data:", JSON.stringify(e.data)); 
+                    console.log("SSE Client: assistantMessageDiv exists:", !!assistantMessageDiv);
+                    const trimmedMessageContent = messageContent ? messageContent.trim() : "";
+                    const isContentNonEmptyAfterTrim = trimmedMessageContent !== '';
+
+                    if (assistantMessageDiv && messageContent && isContentNonEmptyAfterTrim) {
+                        console.log("SSE Client: Appending message content. Trimmed content is non-empty.");
+                        assistantMessageDiv.innerHTML += messageContent; 
+                        messageContentLoaded = true; 
+                        chatContainer.scrollTop = chatContainer.scrollHeight;
+                    } else {
+                        console.log("SSE Client: Message content NOT appended or not considered substantial.");
+                        console.log("SSE Client: Conditions detail - assistantMessageDiv exists:", !!assistantMessageDiv);
+                        console.log("SSE Client: Conditions detail - messageContent (raw) is truthy:", !!messageContent);
+                        console.log("SSE Client: Conditions detail - messageContent.trim() !== '' is:", isContentNonEmptyAfterTrim, "(Trimmed data: ", JSON.stringify(trimmedMessageContent), ")");
+                    }
+                });
+
+                eventSource.addEventListener('close', function() {
+                    console.log('SSE stream closed by server. messageContentLoaded:', messageContentLoaded);
+                    eventSource.close();
+                    
+                    if (!messageContentLoaded && assistantMessageDiv && assistantMessageDiv.innerHTML.trim() === '') {
+                        console.log("SSE Client: Displaying 'No further response' message.");
+                        assistantMessageDiv.innerHTML = '<i>No further response from assistant.</i>';
+                    }
+                    assistantMessageDiv = null; 
+                });
+                
+                eventSource.addEventListener('error', function(e) {
+                    console.error("EventSource failed:", e);
+                    // if (typingIndicator) typingIndicator.remove(); // typingIndicator is not in scope here
+                    if (assistantMessageDiv) {
+                        assistantMessageDiv.innerHTML += "<br><i>Error connecting to stream.</i>";
+                        assistantMessageDiv.classList.add('error-message');
+                    } else {
+                         addMessageToChat('assistant', "Error connecting to stream.").classList.add('error-message');
+                    }
+                    eventSource.close();
+                    assistantMessageDiv = null;
+                });
+
+            } catch (error) {
+                console.error('Error sending message:', error);
+                if (typingIndicator) typingIndicator.remove();
+                const errorDiv = addMessageToChat('assistant', ``);
+                errorDiv.innerHTML = `<i>Error: ${escapeHTML(error.message)}</i>`;
+                errorDiv.classList.add('error-message');
+            }
+        });
+    </script>
+</body>
+</html> 

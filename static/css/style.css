@@ -1,0 +1,320 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    background-color: #121212; /* Dark background */
+    color: #e0e0e0; /* Light text */
+    margin: 0;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #1e1e1e; /* Slightly lighter dark for container */
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); /* Darker shadow */
+}
+
+header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    /* border-bottom: 1px solid #333; */ /* Adjusted for dark theme if re-enabled */
+}
+
+header img.logo {
+    height: 60px;
+    margin-right: 20px;
+    /* Consider a dark-theme version of the logo if the current one doesn't look good */
+}
+
+header h1 {
+    font-size: 2.5em;
+    color: #bb86fc; /* Accent color for dark theme (example) */
+    margin: 0;
+}
+
+h2 {
+    color: #bb86fc; /* Accent color */
+    padding-bottom: 10px;
+    margin-top: 5px; 
+    margin-bottom: 20px;
+}
+
+.section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background-color: #2c2c2c; /* Darker section background */
+    border-radius: 6px;
+    border: 1px solid #383838;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #e0e0e0; /* Light text */
+}
+
+input[type="file"] {
+    border: 1px solid #444;
+    padding: 10px;
+    border-radius: 4px;
+    width: calc(100% - 22px);
+    background-color: #333;
+    color: #e0e0e0;
+}
+
+input[type="file"]::file-selector-button {
+    background-color: #03dac6; /* Accent for button part */
+    color: #121212;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.btn {
+    background-color: #03dac6; /* Primary accent */
+    color: #121212; /* Dark text on light button */
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn:hover {
+    background-color: #018786; /* Darker shade of accent */
+}
+
+.btn-danger {
+    background-color: #cf6679; /* Dark theme error/danger color */
+    color: #121212;
+}
+
+.btn-danger:hover {
+    background-color: #b00020; /* Darker error/danger */
+}
+
+.btn-secondary {
+    background-color: #373737;
+    color: #e0e0e0;
+    border: 1px solid #555; /* Add a border for better visibility */
+}
+.btn-secondary:hover {
+    background-color: #4f4f4f;
+}
+
+
+.table-list {
+    list-style: none;
+    padding: 0;
+}
+
+.table-list li {
+    background-color: #2c2c2c; /* Match section background */
+    border: 1px solid #383838; /* Match section border */
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.table-list li:hover {
+    box-shadow: 0 0 5px rgba(187, 134, 252, 0.2); /* Accent shadow */
+    background-color: #333333;
+}
+
+.table-list span {
+    font-size: 1.1em;
+    color: #e0e0e0;
+}
+
+.table-actions a, .table-actions button {
+    margin-left: 10px;
+    padding: 10px 15px; 
+    font-size: 0.9em;  
+    line-height: 1.2;  
+    vertical-align: middle; 
+}
+
+.table-actions form {
+    display: inline-flex; 
+    vertical-align: middle;
+}
+
+.alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+
+.alert-success {
+    color: #121212; /* Dark text on light background */
+    background-color: #66bb6a; /* Green, but suitable for dark text */
+    border-color: #4caf50;
+}
+
+.alert-error, .alert-danger {
+    color: #121212; /* Dark text on light background */
+    background-color: #ef5350; /* Red, but suitable for dark text */
+    border-color: #e53935;
+}
+
+/* Table preview styles */
+.table-preview-container {
+    overflow-x: auto;
+}
+
+table.dataframe { 
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 0.9em;
+}
+
+table.dataframe th, table.dataframe td {
+    border: 1px solid #444; /* Darker border */
+    padding: 10px;
+    text-align: left;
+    color: #e0e0e0; /* Light text */
+}
+
+table.dataframe th {
+    background-color: #333; /* Darker header for table */
+    color: #bb86fc; /* Accent color for header text */
+    font-weight: bold;
+}
+
+table.dataframe tbody tr:nth-child(even) {
+    background-color: #2a2a2a; /* Slightly different dark for striping */
+}
+
+table.dataframe tbody tr:hover {
+    background-color: #383838; /* Darker hover */
+}
+
+.empty-table-message {
+    font-style: italic;
+    color: #aaa; /* Lighter gray for less emphasis */
+}
+
+.upload-results {
+    margin-top: 20px;
+    border: 1px solid #383838;
+    border-radius: 6px;
+    padding: 15px;
+    background-color: #2c2c2c; /* Match section background */
+}
+
+.upload-results h3 {
+    margin-top: 0;
+    font-size: 1.2em;
+    color: #bb86fc; /* Accent color */
+}
+
+.upload-results ul {
+    list-style: none;
+    padding: 0;
+}
+
+.upload-results li {
+    padding: 8px 0;
+    border-bottom: 1px solid #333; /* Darker separator */
+    color: #e0e0e0;
+}
+.upload-results li:last-child {
+    border-bottom: none;
+}
+
+.status-success {
+    color: #66bb6a; /* Lighter green for dark theme */
+    font-weight: bold;
+}
+.status-failed, .status-error, .status-skipped {
+    color: #cf6679; /* Lighter red/pink for dark theme */
+    font-weight: bold;
+}
+
+.file-info {
+    font-weight: bold;
+    color: #e0e0e0;
+}
+
+.error-detail {
+    font-size: 0.9em;
+    color: #bbb; /* Lighter gray for error details */
+    margin-left: 15px;
+}
+.back-link {
+    margin-top: 20px;
+    display: inline-block;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    header img.logo {
+        margin-bottom: 10px;
+    }
+    header h1 {
+        font-size: 2em;
+    }
+    .table-list li {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .table-actions {
+        margin-top: 10px;
+    }
+    .table-actions a, .table-actions button {
+        margin-left: 0;
+        margin-right: 10px; 
+        margin-bottom: 5px; 
+    }
+}
+
+/* Styles for the "no tables" message */
+.no-tables-message {
+    font-style: italic;
+    color: #aaa; /* Lighter gray */
+    padding: 15px;
+    background-color: #2c2c2c; /* Match section background */
+    border: 1px solid #383838; /* Match section border */
+    border-radius: 6px;
+    text-align: center;
+}
+
+code, pre {
+    background-color: #2c2c2c; /* Dark background for code blocks */
+    color: #e0e0e0;            /* Light text for code */
+    padding: 2px 5px;
+    border-radius: 4px;
+    border: 1px solid #383838;
+}
+
+/* Footer specific styles */
+footer {
+    text-align: center;
+    padding: 20px 0;
+    margin-top: 30px;
+    color: #aaa; /* Lighter gray for footer text */
+    font-size: 0.9em;
+} 

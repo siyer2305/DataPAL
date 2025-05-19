@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataPal - Your Data Analysis Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
+    <script>
+        let accumulatedFiles = [];
+        const MAX_FILES = 5;
+
+        function displayAccumulatedFiles() {
+            const container = document.getElementById('selectedFilesContainer');
+            const uploadButton = document.getElementById('uploadButton');
+            container.innerHTML = ''; // Clear previous display
+
+            if (accumulatedFiles.length === 0) {
+                container.innerHTML = '<p>No files selected.</p>';
+                uploadButton.disabled = true;
+                return;
+            }
+
+            const ul = document.createElement('ul');
+            accumulatedFiles.forEach((file, index) => {
+                const li = document.createElement('li');
+                li.textContent = file.name;
+                li.style.display = 'flex'; // Align file name and cross icon on the same line
+                li.style.justifyContent = 'space-between'; // Push cross icon to the right
+                li.style.alignItems = 'center'; // Vertically align items
+
+                const removeSymbol = document.createElement('span');
+                removeSymbol.innerHTML = '&times;'; // HTML entity for 'X'
+                removeSymbol.style.color = 'red';
+                removeSymbol.style.cursor = 'pointer';
+                removeSymbol.style.marginLeft = '10px'; // Add some space between name and cross
+                removeSymbol.style.fontWeight = 'bold';
+                removeSymbol.title = 'Remove file'; // Tooltip
+
+                removeSymbol.onclick = () => {
+                    accumulatedFiles.splice(index, 1);
+                    displayAccumulatedFiles(); // Re-render
+                    const fileInputElement = document.getElementById('files');
+                    if (accumulatedFiles.length < MAX_FILES) {
+                       fileInputElement.disabled = false;
+                    }
+                };
+                li.appendChild(removeSymbol);
+                ul.appendChild(li);
+            });
+            container.appendChild(ul);
+            uploadButton.disabled = accumulatedFiles.length === 0;
+             // Disable file input if max files are reached
+            const fileInputElement = document.getElementById('files');
+            if (accumulatedFiles.length >= MAX_FILES) {
+                fileInputElement.disabled = true;
+            } else {
+                fileInputElement.disabled = false;
+            }
+        }
+
+        function handleFileSelection(event) {
+            const newFiles = Array.from(event.target.files);
+            const errorDiv = document.getElementById('error');
+            errorDiv.style.display = 'none';
+            errorDiv.textContent = '';
+
+            if (accumulatedFiles.length + newFiles.length > MAX_FILES) {
+                errorDiv.textContent = `You can select a maximum of ${MAX_FILES} files in total. You have already selected ${accumulatedFiles.length}.`;
+                errorDiv.className = 'alert alert-error';
+                errorDiv.style.display = 'block';
+                event.target.value = ""; // Clear the current selection from input
+                return;
+            }
+
+            newFiles.forEach(file => {
+                // Optional: Prevent adding duplicate file names if desired
+                // if (!accumulatedFiles.find(f => f.name === file.name)) {
+                accumulatedFiles.push(file);
+                // }
+            });
+            
+            event.target.value = ""; // IMPORTANT: Clear the file input to allow selecting the same file again or more files
+            displayAccumulatedFiles();
+        }
+
+        async function handleFileUpload(event) {
+            event.preventDefault();
+            //const formData = new FormData(event.target); // OLD: This only takes from current form state
+            const formData = new FormData();
+            if (accumulatedFiles.length === 0) {
+                alert("Please select files to upload.");
+                return;
+            }
+            accumulatedFiles.forEach(file => {
+                formData.append('files', file); // Use 'files' as the backend expects this field name
+            });
+
+            const uploadButton = document.getElementById('uploadButton');
+            // const fileInput = document.getElementById('files'); // Not needed to clear here anymore
+            const messageDiv = document.getElementById('message');
+            const errorDiv = document.getElementById('error');
+            const uploadResultsDiv = document.getElementById('uploadResults');
+            const tablesListDiv = document.getElementById('tablesList');
+
+            uploadButton.disabled = true;
+            uploadButton.textContent = 'Uploading...';
+            messageDiv.style.display = 'none';
+            messageDiv.textContent = '';
+            errorDiv.style.display = 'none';
+            errorDiv.textContent = '';
+            uploadResultsDiv.innerHTML = ''; // Clear previous results
+
+
+            try {
+                const response = await fetch("{{ request.url_for('create_upload_files') }}", {
+                    method: "POST",
+                    body: formData,
+                });
+
+                const result = await response.json();
+
+                // Display global messages
+                if (result.message) {
+                    messageDiv.textContent = result.message;
+                    messageDiv.className = 'alert alert-success';
+                    messageDiv.style.display = 'block';
+                }
+                if (result.error) {
+                    errorDiv.textContent = result.error;
+                    errorDiv.className = 'alert alert-error'; // Ensure this class is styled in CSS
+                    errorDiv.style.display = 'block';
+                }
+
+                // Display per-file results
+                if (result.upload_results && result.upload_results.length > 0) {
+                    let resultsHTML = '<h3>Upload Details:</h3><ul>';
+                    result.upload_results.forEach(res => {
+                        resultsHTML += `<li><span class="file-info">${res.filename}:</span> `;
+                        if (res.status === "Success") {
+                            resultsHTML += `<span class="status-success">Success!</span> Table: ${res.table_name}`;
+                        } else {
+                            resultsHTML += `<span class="status-${res.status.toLowerCase()}">${res.status}</span>`;
+                            if (res.error) {
+                                resultsHTML += ` <span class="error-detail">- ${res.error}</span>`;
+                            }
+                            if (res.attempted_table_name) {
+                                resultsHTML += ` <span class="error-detail">(Attempted name: ${res.attempted_table_name})</span>`;
+                            }
+                        }
+                        resultsHTML += '</li>';
+                    });
+                    resultsHTML += '</ul>';
+                    uploadResultsDiv.innerHTML = resultsHTML;
+                    uploadResultsDiv.style.display = 'block';
+                } else {
+                    uploadResultsDiv.style.display = 'none';
+                }
+
+
+                // Update tables list
+                let tablesHTML = '';
+                if (result.tables && result.tables.length > 0) {
+                    tablesHTML = '<ul class="table-list">';
+                    result.tables.forEach(table => {
+                        tablesHTML += `
+                            <li>
+                                <span>${table}</span>
+                                <div class="table-actions">
+                                    <a href="/tables/${table}/preview" class="btn btn-secondary">Preview</a>
+                                    <form action="/tables/${table}/delete" method="post" style="display: inline;">
+                                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete table ${table}?');">Delete</button>
+                                    </form>
+                                </div>
+                            </li>`;
+                    });
+                    tablesHTML += '</ul>';
+                } else {
+                    tablesHTML = '<p class="no-tables-message">No tables found. Upload some data to get started!</p>';
+                }
+                tablesListDiv.innerHTML = tablesHTML;
+
+
+            } catch (e) {
+                errorDiv.textContent = "An unexpected error occurred during upload: " + e.message;
+                errorDiv.className = 'alert alert-error';
+                errorDiv.style.display = 'block';
+            } finally {
+                uploadButton.disabled = false;
+                uploadButton.textContent = 'Upload';
+                // fileInput.value = ""; // OLD: Not needed as it's cleared on selection
+                accumulatedFiles = []; // Clear the accumulated files list
+                displayAccumulatedFiles(); // Update UI
+            }
+        }
+
+        // Function to get URL query parameters
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        // Display messages from URL parameters on page load
+        window.onload = function() {
+            const message = getQueryParam('message');
+            const error = getQueryParam('error');
+            const messageDiv = document.getElementById('message');
+            const errorDiv = document.getElementById('error');
+
+            if (message) {
+                messageDiv.textContent = message;
+                messageDiv.className = 'alert alert-success';
+                messageDiv.style.display = 'block';
+                // Clean the URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+            if (error) {
+                errorDiv.textContent = error;
+                errorDiv.className = 'alert alert-error';
+                errorDiv.style.display = 'block';
+                 // Clean the URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        };
+
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="{{ url_for('static', path='images/logo.png') }}" alt="DataPal Logo" class="logo">
+            <h1>DataPal</h1>
+        </header>
+
+        <section class="section chat-cta-section">
+            <a href="{{ request.url_for('new_chat_session') }}" class="btn btn-primary btn-large">Start Chatting with Your Data</a>
+        </section>
+
+        <div id="message" class="alert" style="display: none;"></div>
+        <div id="error" class="alert" style="display: none;"></div>
+        
+        <section class="section upload-section">
+            <h2>Upload Your Data</h2>
+            <p>Upload CSV or Excel files (up to 5 files at a time).</p>
+            <form id="uploadForm" onsubmit="handleFileUpload(event)">
+                <div class="form-group">
+                    <label for="files">Choose files to add:</label>
+                    <input type="file" id="files" name="files" multiple accept=".csv,.xls,.xlsx" onchange="handleFileSelection(event)">
+                </div>
+                <div class="form-group">
+                    <h4>Selected Files:</h4>
+                    <div id="selectedFilesContainer"><p>No files selected.</p></div>
+                </div>
+                <button type="submit" id="uploadButton" class="btn" disabled>Upload</button>
+            </form>
+            <div id="uploadResults" class="upload-results" style="display: none;">
+                <!-- Upload results will be shown here -->
+            </div>
+        </section>
+
+        <section class="section tables-section">
+            <h2>Available Data Tables</h2>
+            <div id="tablesList">
+                {% if tables %}
+                    <ul class="table-list">
+                        {% for table in tables %}
+                        <li>
+                            <span>{{ table }}</span>
+                            <div class="table-actions">
+                                <a href="{{ url_for('preview_table_data', table_name=table) }}" class="btn btn-secondary">Preview</a>
+                                <form action="{{ url_for('delete_table_data', table_name=table) }}" method="post" style="display: inline;">
+                                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete table {{ table }}?');">Delete</button>
+                                </form>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="no-tables-message">No tables found. Upload some data to get started!</p>
+                {% endif %}
+            </div>
+        </section>
+
+        <footer>
+            <p>&copy; 2024 DataPal. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>

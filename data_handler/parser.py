@@ -24,6 +24,9 @@ def parse_file(file_input) -> pd.DataFrame | None:
     if hasattr(file_input, 'name'): # Check if it's a file-like object with a 'name' attribute (like Streamlit's UploadedFile)
         original_filename = file_input.name
         file_extension = os.path.splitext(original_filename)[1].lower()
+    elif hasattr(file_input, 'filename'): # Check for FastAPI's UploadFile
+        original_filename = file_input.filename
+        file_extension = os.path.splitext(original_filename)[1].lower()
     elif isinstance(file_input, str):
         original_filename = file_input
         file_extension = os.path.splitext(file_input)[1].lower()

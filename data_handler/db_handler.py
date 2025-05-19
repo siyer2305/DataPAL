@@ -6,24 +6,44 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def get_database_path(filename: str = os.getenv("DB_FILENAME")) -> str:
+def get_database_path() -> str:
     """
-    Gets the database path from environment variables and creates the directory if needed.
+    Gets the full database path primarily from the DB_PATH environment variable.
+    If DB_PATH is not set, falls back to DB_FILENAME in the current directory.
+    If neither is set, a default 'default_app.db' is used in the current directory.
+    Ensures the directory for the database file exists.
     
     Returns:
         str: The full path to the database file
     """
-    db_directory = os.getenv("DB_PATH")
-    database_filename = filename
+    database_full_path = os.getenv("DB_PATH")
 
-    if db_directory:
-        os.makedirs(db_directory, exist_ok=True)
-        database_path = os.path.join(db_directory, database_filename)
+    if database_full_path:
+        # DB_PATH is set and considered the full path to the database file.
+        db_parent_dir = os.path.dirname(database_full_path)
+        if db_parent_dir and not os.path.exists(db_parent_dir): # If there's a directory part and it doesn't exist
+            os.makedirs(db_parent_dir, exist_ok=True)
+        return database_full_path
     else:
-        print(f"Warning: DB_DIR environment variable not found. Database '{database_filename}' will be created in the current directory: {os.path.abspath(database_filename)}")
-        database_path = database_filename
-    
-    return database_path
+        # DB_PATH not set, try DB_FILENAME as a fallback.
+        print(f"Warning: DB_PATH environment variable not set.") # Inform that primary option is missing
+        database_filename = os.getenv("DB_FILENAME")
+        if database_filename:
+            # Using DB_FILENAME. Assume it's a filename or relative path.
+            # If it's just a filename, it will be in CWD. If it's path/to/file.db, handle directory.
+            db_parent_dir_for_filename = os.path.dirname(database_filename)
+            if db_parent_dir_for_filename and not os.path.exists(db_parent_dir_for_filename):
+                os.makedirs(db_parent_dir_for_filename, exist_ok=True)
+            
+            final_path = database_filename
+            print(f"Using DB_FILENAME='{database_filename}'. Database will be at: {os.path.abspath(final_path)}")
+            return final_path
+        else:
+            # Fallback: Neither DB_PATH nor DB_FILENAME is set.
+            default_db_name = "default_app.db"
+            final_path = default_db_name
+            print(f"Warning: Neither DB_PATH nor DB_FILENAME environment variables are set. Using default database '{default_db_name}' in the current directory: {os.path.abspath(final_path)}")
+            return final_path
 
 DATABASE_PATH = get_database_path()
 
