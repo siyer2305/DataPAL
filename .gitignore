@@ -64,3 +64,6 @@ wheels/
 # Jupyter Notebook
 .ipynb_checkpoints
 *.ipynb
+
+# LangGraph API
+.langgraph_api/

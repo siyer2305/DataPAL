@@ -1,1 +1,3 @@
-# This file makes Python treat the `agent` directory as a package.
+from .agent import agent
+
+__all__ = ["agent"]

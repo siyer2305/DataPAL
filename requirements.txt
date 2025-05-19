@@ -3,7 +3,8 @@ pandas
 openpyxl
 xlrd
 python-dotenv
-langchain-anthropic
+langchain-groq
+langchain-community
 langgraph
 langgraph-cli[inmem]
 matplotlib
