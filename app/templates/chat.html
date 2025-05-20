@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Chat - {{ thread_id }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}"> <!-- Link to your existing stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script src="https://unpkg.com/htmx.org/dist/ext/sse.js"></script>
     <style>
@@ -53,13 +53,13 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
         .user-message { 
-            background-color: #F6EDFE; /* Light Purple */ 
+            background-color: #F6EDFE; 
             color: #333;
             align-self: flex-end; 
             border-bottom-right-radius: 6px; 
         }
         .assistant-message { 
-            background-color: #EBFDF1; /* Light Green */
+            background-color: #EBFDF1; 
             color: #333;
             align-self: flex-start; 
             border-bottom-left-radius: 6px; 

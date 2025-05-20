@@ -1,7 +1,7 @@
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-    background-color: #121212; /* Dark background */
-    color: #e0e0e0; /* Light text */
+    background-color: #121212;
+    color: #e0e0e0; 
     margin: 0;
     line-height: 1.6;
 }
@@ -10,9 +10,9 @@ body {
     max-width: 1000px;
     margin: 20px auto;
     padding: 20px;
-    background-color: #1e1e1e; /* Slightly lighter dark for container */
+    background-color: #1e1e1e;
     border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); /* Darker shadow */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
 header {
@@ -20,23 +20,21 @@ header {
     align-items: center;
     margin-bottom: 30px;
     padding-bottom: 20px;
-    /* border-bottom: 1px solid #333; */ /* Adjusted for dark theme if re-enabled */
 }
 
 header img.logo {
     height: 60px;
     margin-right: 20px;
-    /* Consider a dark-theme version of the logo if the current one doesn't look good */
 }
 
 header h1 {
     font-size: 2.5em;
-    color: #bb86fc; /* Accent color for dark theme (example) */
+    color: #bb86fc;
     margin: 0;
 }
 
 h2 {
-    color: #bb86fc; /* Accent color */
+    color: #bb86fc;
     padding-bottom: 10px;
     margin-top: 5px; 
     margin-bottom: 20px;
@@ -45,7 +43,7 @@ h2 {
 .section {
     margin-bottom: 30px;
     padding: 20px;
-    background-color: #2c2c2c; /* Darker section background */
+    background-color: #2c2c2c;
     border-radius: 6px;
     border: 1px solid #383838;
 }
@@ -58,7 +56,7 @@ label {
     display: block;
     margin-bottom: 5px;
     font-weight: bold;
-    color: #e0e0e0; /* Light text */
+    color: #e0e0e0;
 }
 
 input[type="file"] {
@@ -71,7 +69,7 @@ input[type="file"] {
 }
 
 input[type="file"]::file-selector-button {
-    background-color: #03dac6; /* Accent for button part */
+    background-color: #03dac6;
     color: #121212;
     border: none;
     padding: 10px 15px;
@@ -81,8 +79,8 @@ input[type="file"]::file-selector-button {
 }
 
 .btn {
-    background-color: #03dac6; /* Primary accent */
-    color: #121212; /* Dark text on light button */
+    background-color: #03dac6;
+    color: #121212;
     padding: 12px 20px;
     border: none;
     border-radius: 5px;
@@ -94,22 +92,22 @@ input[type="file"]::file-selector-button {
 }
 
 .btn:hover {
-    background-color: #018786; /* Darker shade of accent */
+    background-color: #018786;
 }
 
 .btn-danger {
-    background-color: #cf6679; /* Dark theme error/danger color */
+    background-color: #cf6679;
     color: #121212;
 }
 
 .btn-danger:hover {
-    background-color: #b00020; /* Darker error/danger */
+    background-color: #b00020;
 }
 
 .btn-secondary {
     background-color: #373737;
     color: #e0e0e0;
-    border: 1px solid #555; /* Add a border for better visibility */
+    border: 1px solid #555;
 }
 .btn-secondary:hover {
     background-color: #4f4f4f;
@@ -122,8 +120,8 @@ input[type="file"]::file-selector-button {
 }
 
 .table-list li {
-    background-color: #2c2c2c; /* Match section background */
-    border: 1px solid #383838; /* Match section border */
+    background-color: #2c2c2c;
+    border: 1px solid #383838;
     padding: 15px;
     margin-bottom: 10px;
     border-radius: 4px;
@@ -134,7 +132,7 @@ input[type="file"]::file-selector-button {
 }
 
 .table-list li:hover {
-    box-shadow: 0 0 5px rgba(187, 134, 252, 0.2); /* Accent shadow */
+    box-shadow: 0 0 5px rgba(187, 134, 252, 0.2);
     background-color: #333333;
 }
 
@@ -164,18 +162,17 @@ input[type="file"]::file-selector-button {
 }
 
 .alert-success {
-    color: #121212; /* Dark text on light background */
-    background-color: #66bb6a; /* Green, but suitable for dark text */
+    color: #121212;
+    background-color: #66bb6a;
     border-color: #4caf50;
 }
 
 .alert-error, .alert-danger {
-    color: #121212; /* Dark text on light background */
-    background-color: #ef5350; /* Red, but suitable for dark text */
+    color: #121212;
+    background-color: #ef5350;
     border-color: #e53935;
 }
 
-/* Table preview styles */
 .table-preview-container {
     overflow-x: auto;
 }
@@ -188,29 +185,29 @@ table.dataframe {
 }
 
 table.dataframe th, table.dataframe td {
-    border: 1px solid #444; /* Darker border */
+    border: 1px solid #444;
     padding: 10px;
     text-align: left;
-    color: #e0e0e0; /* Light text */
+    color: #e0e0e0;
 }
 
 table.dataframe th {
-    background-color: #333; /* Darker header for table */
-    color: #bb86fc; /* Accent color for header text */
+    background-color: #333;
+    color: #bb86fc;
     font-weight: bold;
 }
 
 table.dataframe tbody tr:nth-child(even) {
-    background-color: #2a2a2a; /* Slightly different dark for striping */
+    background-color: #2a2a2a;
 }
 
 table.dataframe tbody tr:hover {
-    background-color: #383838; /* Darker hover */
+    background-color: #383838;
 }
 
 .empty-table-message {
     font-style: italic;
-    color: #aaa; /* Lighter gray for less emphasis */
+    color: #aaa;
 }
 
 .upload-results {
@@ -218,13 +215,13 @@ table.dataframe tbody tr:hover {
     border: 1px solid #383838;
     border-radius: 6px;
     padding: 15px;
-    background-color: #2c2c2c; /* Match section background */
+    background-color: #2c2c2c;
 }
 
 .upload-results h3 {
     margin-top: 0;
     font-size: 1.2em;
-    color: #bb86fc; /* Accent color */
+    color: #bb86fc;
 }
 
 .upload-results ul {
@@ -234,7 +231,7 @@ table.dataframe tbody tr:hover {
 
 .upload-results li {
     padding: 8px 0;
-    border-bottom: 1px solid #333; /* Darker separator */
+    border-bottom: 1px solid #333;
     color: #e0e0e0;
 }
 .upload-results li:last-child {
@@ -242,11 +239,11 @@ table.dataframe tbody tr:hover {
 }
 
 .status-success {
-    color: #66bb6a; /* Lighter green for dark theme */
+    color: #66bb6a;
     font-weight: bold;
 }
 .status-failed, .status-error, .status-skipped {
-    color: #cf6679; /* Lighter red/pink for dark theme */
+    color: #cf6679;
     font-weight: bold;
 }
 
@@ -257,7 +254,7 @@ table.dataframe tbody tr:hover {
 
 .error-detail {
     font-size: 0.9em;
-    color: #bbb; /* Lighter gray for error details */
+    color: #bbb;
     margin-left: 15px;
 }
 .back-link {
@@ -265,7 +262,6 @@ table.dataframe tbody tr:hover {
     display: inline-block;
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
     header {
         flex-direction: column;
@@ -291,30 +287,28 @@ table.dataframe tbody tr:hover {
     }
 }
 
-/* Styles for the "no tables" message */
 .no-tables-message {
     font-style: italic;
-    color: #aaa; /* Lighter gray */
+    color: #aaa;
     padding: 15px;
-    background-color: #2c2c2c; /* Match section background */
-    border: 1px solid #383838; /* Match section border */
+    background-color: #2c2c2c;
+    border: 1px solid #383838;
     border-radius: 6px;
     text-align: center;
 }
 
 code, pre {
-    background-color: #2c2c2c; /* Dark background for code blocks */
-    color: #e0e0e0;            /* Light text for code */
+    background-color: #2c2c2c;
+    color: #e0e0e0;
     padding: 2px 5px;
     border-radius: 4px;
     border: 1px solid #383838;
 }
 
-/* Footer specific styles */
 footer {
     text-align: center;
     padding: 20px 0;
     margin-top: 30px;
-    color: #aaa; /* Lighter gray for footer text */
+    color: #aaa;
     font-size: 0.9em;
 } 

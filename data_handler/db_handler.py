@@ -134,7 +134,6 @@ def sanitize_name(name: str, is_table: bool = True) -> str:
     - Strips leading/trailing underscores.
     - Handles empty names by returning a default ('generic_table' or 'generic_column').
     """
-    
     # Replace non-alphanumeric (excluding underscore) with underscore
     name = re.sub(r'[^a-zA-Z0-9_]', '_', name)
     
@@ -157,20 +156,16 @@ def sanitize_name(name: str, is_table: bool = True) -> str:
     elif name[0].isdigit(): # If starts with digit (even if underscore was allowed before)
         prefix = "tbl_" if is_table else "col_"
         name = prefix + name
-
-    # A more robust check for SQL keywords could be added if necessary
-    # For now, this covers common issues.
     return name
 
 def push_to_db(df: pd.DataFrame, table_name_base: str, db_path: str = DATABASE_PATH) -> tuple[bool, str | None, str | None]:
     """
     Pushes a pandas DataFrame to a specified SQLite database table.
-
+    
     Args:
         df (pd.DataFrame): The DataFrame to push.
         table_name_base (str): The base name for the table (e.g., original filename without extension).
         db_path (str): Path to the SQLite database file. Defaults to DATABASE_NAME.
-
     Returns:
         tuple[bool, str | None, str | None]: (success_status, actual_table_name, error_message)
     """
@@ -180,15 +175,11 @@ def push_to_db(df: pd.DataFrame, table_name_base: str, db_path: str = DATABASE_P
 
     actual_table_name = sanitize_name(table_name_base, is_table=True)
     
-    # Sanitize column names
-    # Create a copy to avoid SettingWithCopyWarning if df is a slice
     df_renamed = df.copy()
     clean_columns = {col: sanitize_name(col, is_table=False) for col in df_renamed.columns}
     df_renamed.rename(columns=clean_columns, inplace=True)
-
     try:
         conn = sqlite3.connect(db_path)
-        # Using if_exists='replace' as per previous logic. Change to 'append' or 'fail' if needed.
         df_renamed.to_sql(actual_table_name, conn, if_exists='replace', index=False)
         conn.commit()
         conn.close()

@@ -1,9 +1,19 @@
+import sys
+from pathlib import Path
+from dotenv import load_dotenv
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+load_dotenv()
+
 import os
 import sqlite3
+import html
 from typing import List, Optional, AsyncGenerator, Dict
 from io import BytesIO
 import uuid
-import html
 
 from fastapi import FastAPI, File, UploadFile, Request, Form, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, StreamingResponse
@@ -15,41 +25,28 @@ from markupsafe import Markup
 from data_handler import parse_file, push_to_db, DATABASE_PATH, list_tables, get_table_preview, delete_table
 
 app = FastAPI(title="DataPAL: A Conversational Data Analysis Tool")
+APP_DIR = Path(__file__).resolve().parent.parent
+TEMPLATES_DIR = APP_DIR / "templates"
+STATIC_DIR = APP_DIR / "static"
 
-# Setup templates
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
-# Custom Jinja2 filter: nl2br
 def nl2br_filter(value: str) -> Markup:
-    if not isinstance(value, str):
-        value = str(value) # Ensure it's a string
-    # Escape the content first, then replace newlines. This prevents XSS.
     escaped_value = html.escape(value)
     return Markup(escaped_value.replace('\n', '<br>\n'))
 
 templates.env.filters['nl2br'] = nl2br_filter
 
-# Mount static files directory (for CSS, JS, images)
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
-# Database path
 DB_PATH = DATABASE_PATH
 
-# Initialize LangGraph Client
 try:
     langgraph_client = get_client(url="http://localhost:2024")
-    # You might need to register your agent if it's not done elsewhere,
-    # or ensure it's discoverable by the client.
-    # For a locally defined agent, this client will interact with a LangGraph server
-    # where the agent is deployed. If you're running the agent locally as part
-    # of this FastAPI app, the interaction model might be different (e.g. direct invocation).
-    # The reference chatbot_app_reference.py uses an assistant_id="agent".
-    # This implies the agent is registered/deployed with that ID on the LangGraph platform.
 except Exception as e:
     print(f"Failed to initialize LangGraph client: {e}")
     langgraph_client = None
 
-# Ensure the database directory exists (if it's in a subdirectory)
 db_dir = os.path.dirname(DB_PATH)
 if db_dir and not os.path.exists(db_dir):
     os.makedirs(db_dir)
@@ -58,7 +55,16 @@ if db_dir and not os.path.exists(db_dir):
 async def main_page(request: Request):
     """Serves the main page with file upload and table management."""
     tables = list_tables(DB_PATH)
-    return templates.TemplateResponse("index.html", {"request": request, "tables": tables if tables is not None else [], "db_path": DB_PATH, "message": None, "error": None})
+    return templates.TemplateResponse(
+        "index.html", 
+        {
+            "request": request, 
+            "tables": tables if tables is not None else [], 
+            "db_path": DB_PATH, 
+            "message": None, 
+            "error": None
+        }
+    )
 
 @app.post("/uploadfiles/")
 async def create_upload_files(request: Request, files: List[UploadFile] = File(...)):
@@ -75,13 +81,23 @@ async def create_upload_files(request: Request, files: List[UploadFile] = File(.
     if not files:
         return JSONResponse(
             status_code=400,
-            content={"tables": current_tables, "upload_results": [], "error": "No files were uploaded."}
+            content={
+                "tables": current_tables, 
+                "upload_results": [], 
+                "message": None, 
+                "error": "No files were uploaded."
+            }
         )
 
     if len(files) > 5: # This limit is now also enforced client-side, but good to keep backend check
         return JSONResponse(
             status_code=400,
-            content={"tables": current_tables, "upload_results": [], "error": "You can upload a maximum of 5 files."}
+            content={
+                "tables": current_tables, 
+                "upload_results": [], 
+                "message": None, 
+                "error": "You can upload a maximum of 5 files."
+            }
         )
 
     results = []
@@ -89,15 +105,26 @@ async def create_upload_files(request: Request, files: List[UploadFile] = File(.
 
     for file in files:
         if file.filename == "": # Handle case where empty file part is sent
-            results.append({"filename": "Unknown (empty part)", "status": "Skipped", "error": "Empty file part received."})
+            results.append(
+                {
+                    "filename": "Unknown (empty part)", 
+                    "status": "Skipped", 
+                    "error": "Empty file part received."
+                }
+            )
             has_errors = True
-            continue
-        
+            continue  
         try:
             allowed_extensions = {".csv", ".xlsx", ".xls"}
             file_ext = os.path.splitext(file.filename)[1].lower()
             if file_ext not in allowed_extensions:
-                results.append({"filename": file.filename, "status": "Skipped", "error": f"Invalid file type: {file_ext}. Only CSV and Excel files are allowed."})
+                results.append(
+                    {
+                        "filename": file.filename, 
+                        "status": "Skipped", 
+                        "error": f"Invalid file type: {file_ext}. Only CSV and Excel files are allowed."
+                    }
+                )
                 has_errors = True
                 continue
 
@@ -112,15 +139,40 @@ async def create_upload_files(request: Request, files: List[UploadFile] = File(.
                 table_name_base = os.path.splitext(file.filename)[0]
                 success, actual_table_name, error_message = push_to_db(parsed_data, table_name_base, DB_PATH)
                 if success:
-                    results.append({"filename": file.filename, "status": "Success", "table_name": actual_table_name})
+                    results.append(
+                        {
+                            "filename": file.filename, 
+                            "status": "Success", 
+                            "table_name": actual_table_name
+                        }
+                    )
                 else:
-                    results.append({"filename": file.filename, "status": "Failed to insert", "error": error_message, "attempted_table_name": actual_table_name})
+                    results.append(
+                        {
+                            "filename": file.filename, 
+                            "status": "Failed to insert", 
+                            "error": error_message, 
+                            "attempted_table_name": actual_table_name
+                        }
+                    )
                     has_errors = True
             else:
-                results.append({"filename": file.filename, "status": "Failed to parse", "error": "File could not be parsed. Check format/content."})
+                results.append(
+                    {
+                        "filename": file.filename, 
+                        "status": "Failed to parse", 
+                        "error": "File could not be parsed. Check format/content."
+                    }
+                )
                 has_errors = True
         except Exception as e:
-            results.append({"filename": file.filename, "status": "Error", "error": str(e)})
+            results.append(
+                {
+                    "filename": file.filename, 
+                    "status": "Error", 
+                    "error": str(e)
+                }
+            )
             has_errors = True
         finally:
             await file.close()
@@ -187,7 +239,6 @@ async def delete_table_data(request: Request, table_name: str):
         return RedirectResponse(url=f"/?error=An unexpected error occurred while deleting table '{table_name}': {str(e)}", status_code=303)
 
 # Chat Endpoints
-
 def get_user_id(request: Request) -> str:
     """Get or create a user ID from cookies."""
     user_id = request.cookies.get("user_id")
@@ -222,7 +273,6 @@ async def chat_page(request: Request, thread_id: str):
             "db_path": DB_PATH, 
             "chat_error": error_message_for_template 
         })
-
     try:
         # Ensure thread exists, create if not.
         await langgraph_client.threads.create(
@@ -233,8 +283,6 @@ async def chat_page(request: Request, thread_id: str):
     except Exception as e:
         print(f"Error interacting with LangGraph to ensure thread exists: {e}")
         error_message_for_template = f"Could not initialize chat session due to a LangGraph error: {str(e)}. Please ensure the LangGraph server is running at http://localhost:2024 and is accessible."
-        # Fall through to render chat.html with the error message, 
-        # as the page might still be partially usable or the error needs to be shown there.
 
     # Pass thread_id, user_id, and any error to the template
     return templates.TemplateResponse("chat.html", {
@@ -305,15 +353,14 @@ async def send_chat_message(request: Request, thread_id: str):
             content={"error": "Chat service is not available (LangGraph client not initialized)."},
             status_code=503
         )
-
     # user_id = get_user_id(request) # Optional: Get user_id for logging or metadata if needed
 
     try:
         run = await langgraph_client.runs.create(
             thread_id=thread_id,
-            assistant_id="agent", # This is the key part - assuming your agent is deployed/identified as 'agent'
-            input={"messages": [{"role": "user", "content": user_message_content}]}, # LangGraph uses "role": "user"
-            stream_mode="messages" # Use "messages" or "messages_tuple" based on agent and preference
+            assistant_id="agent",
+            input={"messages": [{"role": "user", "content": user_message_content}]},
+            stream_mode="messages" 
         )
         run_id = run["run_id"]
         
@@ -326,7 +373,6 @@ async def send_chat_message(request: Request, thread_id: str):
             content={"error": f"Error processing your message: {str(e)}"},
             status_code=500
         )
-
 
 async def chat_message_generator(thread_id: str, run_id: str) -> AsyncGenerator[str, None]:
     """Streams assistant responses via SSE."""
@@ -417,9 +463,6 @@ async def chat_message_generator(thread_id: str, run_id: str) -> AsyncGenerator[
         
         if latest_assistant_response_content.strip():
             print(f"SSE_GENERATOR ({run_id}): Sending final assistant message to client (length {len(latest_assistant_response_content)}).")
-            # Replace newlines with <br> for HTML display.
-            # The content itself is assumed to be safe (e.g., markdown or plain text).
-            # If it could contain arbitrary HTML from the AI, further sanitization or careful handling on client is needed.
             yield f"event: message\ndata: {latest_assistant_response_content.replace(chr(10), '<br>')}\n\n"
             message_event_sent_count = 1
         else:
@@ -454,18 +497,3 @@ async def get_chat_message_stream(thread_id: str, run_id: Optional[str] = None):
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "Connection": "keep-alive", "X-Accel-Buffering": "no"}
     )
-
-# Placeholder for main execution (for running with uvicorn)
-if __name__ == "__main__":
-    import uvicorn
-    # Make sure to create the 'templates' directory and add 'index.html', 'table_preview.html'.
-    # Also, ensure data_handler package is accessible.
-    
-    # Example: Create dummy DB for testing if it doesn't exist
-    if not os.path.exists(DB_PATH):
-        print(f"Database not found at {DB_PATH}, creating a dummy one for testing.")
-        conn = sqlite3.connect(DB_PATH)
-        conn.close()
-        print(f"Dummy database created at {DB_PATH}.")
-
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
