@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.png" alt="DataPAL Logo">
+  <img src="assets/logo.png" alt="DataPAL Logo" width="350">
 </p>
 
 # DataPAL
