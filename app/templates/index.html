@@ -5,6 +5,428 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DataPal - Your Data Analysis Assistant</title>
     <link rel="stylesheet" href="{{ url_for('static', path='css/style.css') }}">
+    <style>
+        :root {
+            --primary-color: #3d89b8;
+            --primary-dark: #2f6d94;
+            --bg-light: #f8fafc;
+            --bg-white: #ffffff;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666666;
+            --border-color: #e5e7eb;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --radius-sm: 8px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            min-height: 100vh;
+            background-color: var(--bg-light);
+            color: var(--text-primary);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        header {
+            text-align: center;
+            padding: 2.5rem 0 2rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), #5da8d9);
+            border-radius: 2px;
+        }
+
+        .header-content {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        header .logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1.25rem;
+            transition: all 0.3s ease;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+        }
+
+        header .logo:hover {
+            transform: translateY(-3px);
+            filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.15));
+        }
+
+        .header-text h1 {
+            font-size: 2.75rem;
+            background: linear-gradient(90deg, var(--primary-color), #5da8d9);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0 0 0.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.25rem;
+            margin: 0;
+            font-weight: 400;
+            line-height: 1.5;
+            max-width: 600px;
+            margin: 0 auto;
+            opacity: 0.9;
+        }
+
+        .section {
+            background-color: var(--bg-white);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .section h2 {
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            margin: 0 0 1rem 0;
+            font-weight: 600;
+        }
+
+        .section p {
+            color: var(--text-secondary);
+            margin: 0 0 1.5rem 0;
+            line-height: 1.6;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px dashed var(--border-color);
+            border-radius: var(--radius-md);
+            background-color: var(--bg-light);
+            transition: border-color 0.2s ease;
+            cursor: pointer;
+        }
+
+        input[type="file"]:hover {
+            border-color: var(--primary-color);
+        }
+
+        input[type="file"]:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn {
+            padding: 0.875rem 1.5rem;
+            border: none;
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background-color: var(--bg-light);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: var(--border-color);
+        }
+
+        .btn-danger {
+            background-color: #DC2626;
+            color: white;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background-color: #B91C1C;
+        }
+
+        .btn-large {
+            padding: 1rem 2rem;
+            font-size: 1.125rem;
+        }
+
+        .alert {
+            padding: 1rem 1.25rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert-success {
+            background-color: #ECFDF5;
+            color: #065F46;
+            border: 1px solid #059669;
+        }
+
+        .alert-error {
+            background-color: #FEE2E2;
+            color: #991B1B;
+            border: 1px solid #DC2626;
+        }
+
+        #selectedFilesContainer ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #selectedFilesContainer li {
+            padding: 0.75rem 1rem;
+            background-color: var(--bg-light);
+            border-radius: var(--radius-md);
+            margin-bottom: 0.5rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .table-list {
+            list-style: none;
+            padding: 0;
+            margin: 1rem 0;
+        }
+
+        .table-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background-color: var(--bg-light);
+            border-radius: var(--radius-md);
+            margin-bottom: 0.5rem;
+            transition: transform 0.2s ease;
+        }
+
+        .table-list li:hover {
+            transform: translateX(4px);
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .table-actions .btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+
+        .no-tables-message {
+            color: var(--text-secondary);
+            text-align: center;
+            font-style: italic;
+            padding: 2rem;
+        }
+
+        #uploadResults {
+            margin: 2rem 0;
+            background: var(--bg-white);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        #uploadResults h3 {
+            color: var(--text-primary);
+            margin: 0 0 1.25rem 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        #uploadResults ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #uploadResults li {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        #uploadResults li:last-child {
+            border-bottom: none;
+        }
+
+        .file-info {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .status-success {
+            color: var(--primary-color);
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-success::before {
+            content: '✓';
+            display: inline-block;
+            width: 1.25rem;
+            height: 1.25rem;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 0.75rem;
+            text-align: center;
+            line-height: 1.25rem;
+        }
+
+        .status-error {
+            color: #DC2626;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-error::before {
+            content: '!';
+            display: inline-block;
+            width: 1.25rem;
+            height: 1.25rem;
+            border-radius: 50%;
+            background-color: #DC2626;
+            color: white;
+            font-size: 0.75rem;
+            text-align: center;
+            line-height: 1.25rem;
+            font-weight: bold;
+        }
+
+        .error-detail {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-left: 1.75rem;
+            line-height: 1.5;
+        }
+
+        .chat-cta-section {
+            text-align: center;
+            margin-top: auto;
+            padding: 2rem;
+            background: linear-gradient(to bottom right, #ECFDF5, #F6EDFE);
+        }
+
+        .chat-cta-section .btn {
+            font-size: 1.25rem;
+            padding: 1.25rem 2.5rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .chat-cta-section .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            margin-top: 0.5rem;
+        }
+
+        .tables-section {
+            margin-top: 2rem;
+        }
+
+        .chat-cta-section {
+            margin-top: 3rem;
+            text-align: center;
+            background: linear-gradient(to bottom right, #ECFDF5, #F6EDFE);
+        }
+
+        .chat-cta-section h2 {
+            color: var(--primary-color);
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .chat-cta-section p {
+            font-size: 1.125rem;
+            margin-bottom: 2rem;
+        }
+    </style>
     <script>
         let accumulatedFiles = [];
         const MAX_FILES = 5;
@@ -133,11 +555,11 @@
 
                 // Display per-file results
                 if (result.upload_results && result.upload_results.length > 0) {
-                    let resultsHTML = '<h3>Upload Details:</h3><ul>';
+                    let resultsHTML = '<h3>Upload Details</h3><ul style="display: flex; flex-direction: column; gap: 0.5rem;">';
                     result.upload_results.forEach(res => {
-                        resultsHTML += `<li><span class="file-info">${res.filename}:</span> `;
+                        resultsHTML += `<li><div class="file-info">${res.filename}</div>`;
                         if (res.status === "Success") {
-                            resultsHTML += `<span class="status-success">Success!</span> Table: ${res.table_name}`;
+                            resultsHTML += `<div class="status-success">Success! Table: <strong>${res.table_name}</strong></div>`;
                         } else {
                             resultsHTML += `<span class="status-${res.status.toLowerCase()}">${res.status}</span>`;
                             if (res.error) {
@@ -160,22 +582,48 @@
                 // Update tables list
                 let tablesHTML = '';
                 if (result.tables && result.tables.length > 0) {
-                    tablesHTML = '<ul class="table-list">';
+                    tablesHTML = `
+                        <div class="section-header" style="margin-bottom: 1rem;">
+                            <h2 style="margin: 0 0 0.5rem 0; font-size: 1.25rem;">Your Data Tables</h2>
+                            <p style="margin: 0; color: var(--text-secondary);">View and manage your uploaded data tables</p>
+                        </div>
+                        <div class="table-responsive" style="overflow-x: auto;">
+                            <table class="dataframe" style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="text-align: left;">
+                                        <th style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border);">Table Name</th>
+                                        <th style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border);">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`;
+                    
                     result.tables.forEach(table => {
                         tablesHTML += `
-                            <li>
-                                <span>${table}</span>
-                                <div class="table-actions">
-                                    <a href="/tables/${table}/preview" class="btn btn-secondary">Preview</a>
-                                    <form action="/tables/${table}/delete" method="post" style="display: inline;">
-                                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete table ${table}?');">Delete</button>
-                                    </form>
-                                </div>
-                            </li>`;
+                                    <tr style="border-bottom: 1px solid var(--border);">
+                                        <td style="padding: 1rem; vertical-align: middle; font-weight: 500;">${table}</td>
+                                        <td style="padding: 1rem; vertical-align: middle;">
+                                            <div style="display: flex; gap: 0.5rem;">
+                                                <a href="/tables/${table}/preview" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">Preview</a>
+                                                <form action="/tables/${table}/delete" method="post" style="display: inline; margin: 0;">
+                                                    <button type="submit" class="btn btn-danger" style="padding: 0.5rem 1rem; font-size: 0.875rem;" onclick="return confirm('Are you sure you want to delete table ${table}?')">
+                                                        Delete
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>`;
                     });
-                    tablesHTML += '</ul>';
+                    
+                    tablesHTML += `
+                                </tbody>
+                            </table>
+                        </div>`;
                 } else {
-                    tablesHTML = '<p class="no-tables-message">No tables found. Upload some data to get started!</p>';
+                    tablesHTML = `
+                        <div class="section-header" style="margin-bottom: 1rem;">
+                            <h2 style="margin: 0 0 0.5rem 0; font-size: 1.25rem;">Your Data Tables</h2>
+                            <p style="margin: 0; color: var(--text-secondary);">No tables found. Upload some data to get started!</p>
+                        </div>`;
                 }
                 tablesListDiv.innerHTML = tablesHTML;
 
@@ -225,64 +673,120 @@
     </script>
 </head>
 <body>
-    <div class="container">
+    <div class="container main-page">
         <header>
-            <img src="{{ url_for('static', path='images/logo.png') }}" alt="DataPal Logo" class="logo">
-            <h1>DataPal</h1>
+            <div class="header-content">
+                <img src="{{ url_for('static', path='images/logo.png') }}" alt="DataPal Logo" class="logo" style="width: 50px; height: 50px; margin: 10px;">
+                <div class="header-text" style="display: inline-block; vertical-align: top; margin-left: 20px;">
+                    <h1 style="font-size: 30px; font-weight: bold; margin-bottom: 5px;">DataPal</h1>
+                    <p class="subtitle" style="font-size: 18px; color: #666;">Your Intelligent Data Analysis Assistant</p>
+                </div>
+            </div>
         </header>
-
-        <section class="section chat-cta-section">
-            <a href="{{ request.url_for('new_chat_session') }}" class="btn btn-primary btn-large">Start Chatting with Your Data</a>
-        </section>
 
         <div id="message" class="alert" style="display: none;"></div>
         <div id="error" class="alert" style="display: none;"></div>
         
-        <section class="section upload-section">
-            <h2>Upload Your Data</h2>
-            <p>Upload CSV or Excel files (up to 5 files at a time).</p>
-            <form id="uploadForm" onsubmit="handleFileUpload(event)">
-                <div class="form-group">
-                    <label for="files">Choose files to add:</label>
-                    <input type="file" id="files" name="files" multiple accept=".csv,.xls,.xlsx" onchange="handleFileSelection(event)">
+        <div class="grid-layout">
+            <section class="section upload-section">
+                <div class="section-header">
+                    <h2>Upload Your Data</h2>
+                    <p>Upload CSV or Excel files (up to 5 files at a time) to start analyzing your data.</p>
                 </div>
-                <div class="form-group">
-                    <h4>Selected Files:</h4>
-                    <div id="selectedFilesContainer"><p>No files selected.</p></div>
-                </div>
-                <button type="submit" id="uploadButton" class="btn" disabled>Upload</button>
-            </form>
-            <div id="uploadResults" class="upload-results" style="display: none;">
-                <!-- Upload results will be shown here -->
-            </div>
-        </section>
+                <form id="uploadForm" onsubmit="handleFileUpload(event)" class="upload-form">
+                    <div class="form-group">
+                        <label for="files">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                            Choose files to add
+                        </label>
+                        <input type="file" id="files" name="files" multiple accept=".csv,.xls,.xlsx" onchange="handleFileSelection(event)">
+                    </div>
+                    <div class="form-group selected-files">
+                        <h4>Selected Files</h4>
+                        <div id="selectedFilesContainer" class="files-list">
+                            <p>No files selected.</p>
+                        </div>
+                        <button type="submit" id="uploadButton" class="btn btn-primary" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                            Upload
+                        </button>
+                    </div>
+                </form>
+                <div id="uploadResults" class="upload-results" style="display: none;"></div>
+            </section>
 
-        <section class="section tables-section">
-            <h2>Available Data Tables</h2>
-            <div id="tablesList">
-                {% if tables %}
-                    <ul class="table-list">
+            <section class="section tables-section">
+                <div class="section-header">
+                    <h2>Your Data Tables</h2>
+                    <p>View and manage your uploaded data tables</p>
+                </div>
+                <div id="tablesList" class="tables-grid">
+                    {% if tables %}
                         {% for table in tables %}
-                        <li>
-                            <span>{{ table }}</span>
+                        <div class="table-card">
+                            <div class="table-info">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                    <line x1="16" y1="13" x2="8" y2="13"/>
+                                    <line x1="16" y1="17" x2="8" y2="17"/>
+                                    <line x1="10" y1="9" x2="8" y2="9"/>
+                                </svg>
+                                <span class="table-name">{{ table }}</span>
+                            </div>
                             <div class="table-actions">
-                                <a href="{{ url_for('preview_table_data', table_name=table) }}" class="btn btn-secondary">Preview</a>
-                                <form action="{{ url_for('delete_table_data', table_name=table) }}" method="post" style="display: inline;">
-                                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete table {{ table }}?');">Delete</button>
+                                <a href="{{ url_for('preview_table_data', table_name=table) }}" class="btn btn-secondary">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                    Preview
+                                </a>
+                                <form action="{{ url_for('delete_table_data', table_name=table) }}" method="post">
+                                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete table {{ table }}?');">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="3 6 5 6 21 6"/>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                        </svg>
+                                        Delete
+                                    </button>
                                 </form>
                             </div>
-                        </li>
+                        </div>
                         {% endfor %}
-                    </ul>
-                {% else %}
-                    <p class="no-tables-message">No tables found. Upload some data to get started!</p>
-                {% endif %}
+                    {% else %}
+                        <div class="empty-state">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/>
+                                <polyline points="13 2 13 9 20 9"/>
+                            </svg>
+                            <p>No tables found. Upload some data to get started!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
+        </div>
+
+        <section class="section chat-cta-section">
+            <div class="cta-content">
+                <h2>Ready to Analyze?</h2>
+                <p>Start a conversation with DataPal to analyze your data intelligently.</p>
+                <a href="{{ request.url_for('new_chat_session') }}" class="btn btn-primary btn-large">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    Start Chatting with Your Data
+                </a>
             </div>
         </section>
-
-        <footer>
-            <p>&copy; 2024 DataPal. All rights reserved.</p>
-        </footer>
     </div>
 </body>
 </html>

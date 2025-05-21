@@ -7,130 +7,285 @@
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script src="https://unpkg.com/htmx.org/dist/ext/sse.js"></script>
     <style>
+        :root {
+            --primary-color: var(--primary);
+            --primary-dark: var(--primary-dark);
+            --bg-light: var(--background);
+            --bg-white: var(--surface);
+            --text-primary: var(--text);
+            --text-secondary: var(--text-light);
+            --border-color: var(--border);
+            --message-user-bg: #F6EDFE;
+            --message-assistant-bg: #E6F0FF;
+            --shadow-sm: var(--shadow-sm);
+            --shadow-md: var(--shadow);
+            --radius-lg: var(--radius-lg);
+            --radius-md: var(--radius);
+            --radius-sm: var(--radius-sm);
+            /* New variables for improved UI */
+            --input-bg: #f0f2f5;
+            --hover-transition: all 0.3s ease;
+            --primary-light: #4e82ca; /* Light blue for button hover */
+        }
+
         body { 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
             margin: 0; 
             display: flex; 
             flex-direction: column; 
             height: 100vh; 
-            background-color: #f4f7f6; 
-            color: #333;
+            background-color: var(--bg-light); 
+            color: var(--text-primary);
+            line-height: 1.6;
         }
+
         .chat-header {
-            padding: 15px; 
-            background-color: #02AB55; /* LangChain Green */
-            color: white; 
+            padding: 1.25rem 1.25rem 1rem 1.25rem;
+            background-color: var(--bg-white);
+            color: var(--text-primary);
             text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-bottom: 1px solid var(--border-color);
+            border-radius: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin: 1rem 1rem 1.5rem 1rem; /* Added space all around the header */
+            position: relative; /* For absolute positioning of buttons */
+            overflow: visible; /* Ensure content is visible */
         }
+
         .chat-header h1 {
             margin: 0;
-            font-size: 1.5em;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            letter-spacing: -0.5px;
+            text-align: center;
+            flex: 1;
+            margin-left: -40px; /* Offset the width of the back button to center the text */
         }
-        .chat-header a {
+
+        .chat-header nav {
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-button {
             color: white;
+            background-color: var(--primary-color);
             text-decoration: none;
-            font-size: 0.9em;
+            font-size: 1rem;
+            border-radius: 50px;
+            width: 40px;
+            height: 40px;
+            border: none;
+            transition: var(--hover-transition);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
-        .chat-header a:hover {
-            text-decoration: underline;
+
+        .header-button:hover {
+            background-color: var(--primary-light); /* Changed to light green to match Send button */
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
+        
+        .back-button {
+            margin-left: 0;
+            /* Match the new chat button styles */
+            color: white;
+            background-color: var(--primary-color);
+            text-decoration: none;
+            font-size: 1rem;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            border: none;
+            transition: var(--hover-transition);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .new-chat-button {
+            margin-right: 0;
+        }
+
         #chat-container { 
             flex-grow: 1; 
             overflow-y: auto; 
-            padding: 20px; 
+            padding: 1.5rem; 
             display: flex; 
             flex-direction: column; 
-            gap: 12px; 
-            background-color: #ffffff;
+            gap: 1rem;
+            background-color: var(--bg-white);
+            scroll-behavior: smooth;
+            margin: 0 1rem;
+            margin-bottom: 1.5rem; /* Added space between chat and input area */
+            border-radius: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
         }
+
         .message { 
-            padding: 10px 15px; 
-            border-radius: 18px; 
+            padding: 1rem 1.25rem; 
+            border-radius: 18px;
             max-width: 75%; 
             word-wrap: break-word; 
-            line-height: 1.4;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            line-height: 1.5;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+            opacity: 0;
+            transform: translateY(10px);
+            animation: messageAppear 0.3s ease forwards;
         }
+
+        @keyframes messageAppear {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         .user-message { 
-            background-color: #F6EDFE; 
-            color: #333;
+            background-color: var(--message-user-bg);
+            color: var(--text-primary);
             align-self: flex-end; 
-            border-bottom-right-radius: 6px; 
+            border-bottom-right-radius: 6px;
         }
+
         .assistant-message { 
-            background-color: #EBFDF1; 
-            color: #333;
+            background-color: var(--message-assistant-bg);
+            color: var(--text-primary);
             align-self: flex-start; 
-            border-bottom-left-radius: 6px; 
+            border-bottom-left-radius: 6px;
         }
+
+        /* Back button specific styles */
+        .back-button {
+            position: relative;
+            z-index: 1000;
+            pointer-events: auto !important;
+        }
+
         .assistant-message.typing {
             display: flex;
             align-items: center;
+            gap: 0.35rem;
+            padding: 0.5rem 0.75rem;
+            width: auto;
+            min-width: auto;
+            min-height: auto;
+            max-width: fit-content;
         }
+
         .assistant-message.typing span {
             display: inline-block;
-            width: 8px;
-            height: 8px;
-            margin: 0 2px;
-            background-color: #02AB55;
+            width: 6px;
+            height: 6px;
+            background-color: var(--primary-color);
             border-radius: 50%;
             opacity: 0.4;
-            animation: typing-dots 1.2s infinite ease-in-out;
+            animation: typing-dots 1.4s infinite ease-in-out;
         }
-        .assistant-message.typing span:nth-child(1) { animation-delay: -0.2s; }
-        .assistant-message.typing span:nth-child(2) { animation-delay: -0.1s; }
+
+        .assistant-message.typing span:nth-child(1) { animation-delay: -0.32s; }
+        .assistant-message.typing span:nth-child(2) { animation-delay: -0.16s; }
         .assistant-message.typing span:nth-child(3) { animation-delay: 0s; }
 
         @keyframes typing-dots {
-            0%, 60%, 100% { transform: scale(0.8); opacity: 0.4; }
-            30% { transform: scale(1); opacity: 1; }
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+            40% { transform: scale(1); opacity: 1; }
         }
+        
+        /* Ensure the typing indicator is visible and properly positioned */
+        #assistant-typing-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            margin-bottom: 0.5rem;
+        }
+
         #input-area { 
             display: flex; 
-            padding: 15px; 
-            border-top: 1px solid #e0e0e0; 
-            background-color: #f9f9f9; 
+            padding: 1.25rem;
+            gap: 0.75rem;
+            background-color: var(--bg-white);
+            border-top: 1px solid var(--border-color);
+            margin: 0 1rem 1rem 1rem;
+            border-radius: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
+
         #message-input { 
             flex-grow: 1; 
-            padding: 12px 15px; 
-            border: 1px solid #ccc; 
-            border-radius: 22px; 
-            margin-right: 10px; 
-            font-size: 1em;
+            padding: 0.875rem 1.25rem; 
+            border: none; 
+            border-radius: 50px;
+            font-size: 1rem;
+            color: var(--text-primary);
+            background-color: var(--input-bg);
+            transition: var(--hover-transition);
         }
+
         #message-input:focus {
             outline: none;
-            border-color: #02AB55;
-            box-shadow: 0 0 0 2px rgba(2, 171, 85, 0.2);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 20%, transparent);
+            background-color: var(--input-bg);
         }
+
+        #message-input::placeholder {
+            color: var(--text-secondary);
+        }
+
         #input-area button { 
-            padding: 12px 20px; 
+            padding: 0.875rem 1.5rem; 
             border: none; 
-            background-color: #02AB55; 
+            background-color: var(--primary-color);
             color: white; 
-            border-radius: 22px; 
+            border-radius: 50px;
             cursor: pointer; 
-            font-size: 1em;
-            transition: background-color 0.2s;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: var(--hover-transition);
         }
+
         #input-area button:hover { 
-            background-color: #028a44; 
+            background-color: var(--primary-light); /* Changed to light green instead of dark green */
+            color: white; /* Ensure text stays visible */
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
+
+        #input-area button:active {
+            transform: translateY(0);
+        }
+
         .error-message { 
-            color: #D8000C; 
-            background-color: #FFD2D2;
-            border: 1px solid #D8000C;
-            font-style: italic; 
-            font-size: 0.9em; 
+            color: #DC2626; 
+            background-color: #FEE2E2;
+            border: 1px solid #DC2626;
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            margin: 0.5rem 0;
+            animation: messageAppear 0.3s ease forwards;
         }
     </style>
 </head>
 <body>
     <div class="chat-header">
-        <h1>Chat with your Database</h1>
-        <p><a href="{{ url_for('main_page') }}">Back to Main Page</a> | <a href="{{ url_for('new_chat_session') }}">Start New Chat</a></p>
+        <nav>
+            <a href="/" class="header-button back-button" title="Back to Main Page" id="back-button">←</a>
+            <h1>Chat with your Database</h1>
+            <a href="{{ url_for('new_chat_session') }}" class="header-button new-chat-button" title="Start New Chat">+</a>
+        </nav>
     </div>
 
     <div id="chat-container">
@@ -164,6 +319,14 @@
         }
 
         function addMessageToChat(role, text, isTyping = false) {
+            // Remove existing typing indicator if adding a new message
+            if (!isTyping) {
+                const existingIndicator = document.getElementById('assistant-typing-indicator');
+                if (existingIndicator) {
+                    existingIndicator.remove();
+                }
+            }
+            
             const messageWrapper = document.createElement('div');
             messageWrapper.classList.add('message');
             if (role === 'user') {
@@ -181,9 +344,23 @@
                 }
             }
             chatContainer.appendChild(messageWrapper);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+            chatContainer.scrollTop = chatContainer.scrollHeight; // Auto-scroll to bottom
             return messageWrapper; // Return the created div
         }
+
+        // Handle back button click - more reliable implementation
+        const backButton = document.getElementById('back-button');
+        const handleBackClick = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            window.location.href = '/';
+            return false;
+        };
+        
+        // Add multiple event listeners to ensure it works
+        backButton.addEventListener('click', handleBackClick, true); // Use capture phase
+        backButton.addEventListener('mousedown', handleBackClick, true);
+        backButton.addEventListener('touchstart', handleBackClick, { passive: false });
 
         chatForm.addEventListener('submit', async function(event) {
             event.preventDefault();
@@ -213,13 +390,16 @@
                 const data = await response.json();
                 const runId = data.run_id;
 
-                if (typingIndicator) typingIndicator.remove(); // Remove typing indicator once stream starts or if error before stream
+                // Keep the typing indicator visible
+                // We'll only remove it when we start receiving actual content
 
                 if (eventSource) {
                     eventSource.close();
                 }
                 
-                assistantMessageDiv = addMessageToChat('assistant', ''); // Create new div for assistant's response
+                // Don't create the assistant message div yet
+                // We'll create it when we start receiving content
+                assistantMessageDiv = null;
                 messageContentLoaded = false; // Reset flag for new response
 
                 eventSource = new EventSource(`/chat/${threadId}/get-message?run_id=${runId}`);
@@ -231,7 +411,16 @@
                     const trimmedMessageContent = messageContent ? messageContent.trim() : "";
                     const isContentNonEmptyAfterTrim = trimmedMessageContent !== '';
 
-                    if (assistantMessageDiv && messageContent && isContentNonEmptyAfterTrim) {
+                    // Only when we receive actual content:
+                    if (messageContent && isContentNonEmptyAfterTrim) {
+                        // If this is the first content chunk, remove typing indicator and create message div
+                        if (!assistantMessageDiv) {
+                            // Remove typing indicator only when we have actual content
+                            if (typingIndicator) typingIndicator.remove();
+                            // Now create the assistant message div
+                            assistantMessageDiv = addMessageToChat('assistant', '');
+                        }
+                        
                         console.log("SSE Client: Appending message content. Trimmed content is non-empty.");
                         assistantMessageDiv.innerHTML += messageContent; 
                         messageContentLoaded = true; 
@@ -248,7 +437,13 @@
                     console.log('SSE stream closed by server. messageContentLoaded:', messageContentLoaded);
                     eventSource.close();
                     
-                    if (!messageContentLoaded && assistantMessageDiv && assistantMessageDiv.innerHTML.trim() === '') {
+                    // If we never created an assistant message div (no content received)
+                    if (!assistantMessageDiv) {
+                        // Remove typing indicator
+                        if (typingIndicator) typingIndicator.remove();
+                        // Create message div with error
+                        assistantMessageDiv = addMessageToChat('assistant', '<i>No response from assistant.</i>');
+                    } else if (!messageContentLoaded && assistantMessageDiv.innerHTML.trim() === '') {
                         console.log("SSE Client: Displaying 'No further response' message.");
                         assistantMessageDiv.innerHTML = '<i>No further response from assistant.</i>';
                     }
@@ -257,7 +452,10 @@
                 
                 eventSource.addEventListener('error', function(e) {
                     console.error("EventSource failed:", e);
-                    // if (typingIndicator) typingIndicator.remove(); // typingIndicator is not in scope here
+                    
+                    // Remove typing indicator on error
+                    if (typingIndicator) typingIndicator.remove();
+                    
                     if (assistantMessageDiv) {
                         assistantMessageDiv.innerHTML += "<br><i>Error connecting to stream.</i>";
                         assistantMessageDiv.classList.add('error-message');
@@ -278,4 +476,4 @@
         });
     </script>
 </body>
-</html> 
+</html>
