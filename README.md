@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/logo.png" alt="DataPAL Logo">
+</p>
+
 # DataPAL
 
 DataPal is an intelligent conversational AI agent that enables natural language interactions with your structured data. It helps users derive insights and create visualizations from their data through simple conversations. Built as an agentic SQL RAG implementation, DataPal can automatically generate database schemas, provide table listings, and intelligently query relevant tables based on natural language questions.
@@ -34,9 +38,20 @@ To install and set up the project, follow these steps:
 
 5. **Run the application**
 
-   The application is built using Streamlit, a powerful Python framework for creating web applications with minimal code. Streamlit makes it easy to create interactive data applications without extensive knowledge of web development.
+   The AI agent was built using LangGraph, a powerful framework for creating AI agents using concepts of graphs and nodes. The documentation for LangGraph can be found [here](https://langchain-ai.github.io/langgraph/). It provides a Python SDK which makes it easy to integrate the AI agent with the web application.
 
-   To run the Streamlit application:
+   To start a server of LangGraph on your local machine using the terminal: 
+   
    ```powershell
-   streamlit run app.py
+   langgraph dev
+   ```  
+   
+   Note: This command creates a developer server that is not suitable for production use. For production use, follow the instructions in the [LangGraph documentation](https://langchain-ai.github.io/langgraph/) for deploying agents created using LangGraph.
+
+   The web application was built using FastAPI, a powerful Python framework for creating web applications. It uses uvicorn, an ASGI (Asynchronous Server Gateway Interface) server to create web applications.
+
+   To run the web application:
+   ```powershell
+   cd app/src
+   uvicorn fast_app:app --reload
    ```
