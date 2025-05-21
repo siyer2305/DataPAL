@@ -676,8 +676,8 @@
     <div class="container main-page">
         <header>
             <div class="header-content">
-                <img src="{{ url_for('static', path='images/logo.png') }}" alt="DataPal Logo" class="logo" style="width: 50px; height: 50px; margin: 10px;">
-                <div class="header-text" style="display: inline-block; vertical-align: top; margin-left: 20px;">
+                <img src="{{ url_for('static', path='images/logo.png') }}" alt="DataPal Logo" class="logo" style="width: 80px; height: 80px; margin: 10px;">
+                <div class="header-text" style="display: inline-block; vertical-align: middle; margin-left: 25px;">
                     <h1 style="font-size: 30px; font-weight: bold; margin-bottom: 5px;">DataPal</h1>
                     <p class="subtitle" style="font-size: 18px; color: #666;">Your Intelligent Data Analysis Assistant</p>
                 </div>
@@ -691,7 +691,7 @@
             <section class="section upload-section">
                 <div class="section-header">
                     <h2>Upload Your Data</h2>
-                    <p>Upload CSV or Excel files (up to 5 files at a time) to start analyzing your data.</p>
+                    <p>Upload CSV or Excel files (up to 5 files at a time)</p>
                 </div>
                 <form id="uploadForm" onsubmit="handleFileUpload(event)" class="upload-form">
                     <div class="form-group">
@@ -726,7 +726,7 @@
             <section class="section tables-section">
                 <div class="section-header">
                     <h2>Your Data Tables</h2>
-                    <p>View and manage your uploaded data tables</p>
+                    <p>View and manage your uploaded tables</p>
                 </div>
                 <div id="tablesList" class="tables-grid">
                     {% if tables %}

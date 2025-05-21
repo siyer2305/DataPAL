@@ -283,7 +283,11 @@
     <div class="chat-header">
         <nav>
             <a href="/" class="header-button back-button" title="Back to Main Page" id="back-button">←</a>
-            <h1>Chat with your Database</h1>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
+                <img src="{{ url_for('static', path='images/logo.png') }}" alt="DataPal Logo" style="width: 60px; height: 60px;">
+                <h1 style="font-size: 28px; margin: 0;">Chat with your Data</h1>
+            </div>
+
             <a href="{{ url_for('new_chat_session') }}" class="header-button new-chat-button" title="Start New Chat">+</a>
         </nav>
     </div>

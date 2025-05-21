@@ -8,11 +8,11 @@
 </head>
 <body>
     <div class="container">
-        <header>
-            <a href="{{ url_for('main_page') }}" class="header-logo">
-                <img src="{{ url_for('static', path='images/logo.png') }}" alt="DataPal Logo" class="logo">
-                <h1>DataPal</h1>
-            </a>
+        <header style="padding: 1.25rem 1.25rem 1rem 1.25rem; background-color: var(--bg-white); border-radius: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); margin: 1rem 1rem 1.5rem 1rem;">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
+                <img src="{{ url_for('static', path='images/logo.png') }}" alt="DataPal Logo" style="width: 60px; height: 60px;">
+                <h1 style="font-size: 28px; margin: 0; color: var(--primary-color);">DataPal</h1>
+            </div>
         </header>
 
         <div class="content-header">
