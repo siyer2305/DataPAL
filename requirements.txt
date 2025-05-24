@@ -1,9 +1,8 @@
-streamlit
 pandas
 openpyxl
 xlrd
 python-dotenv
-langchain-groq
+langchain-anthropic
 langchain-community
 langgraph
 langgraph-cli[inmem]
@@ -11,3 +10,5 @@ matplotlib
 numpy
 seaborn
 tensorflow
+fastapi
+uvicorn
