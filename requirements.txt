@@ -9,6 +9,5 @@ langgraph-cli[inmem]
 matplotlib
 numpy
 seaborn
-tensorflow
 fastapi
 uvicorn
